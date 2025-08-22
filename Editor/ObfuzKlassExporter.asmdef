@@ -1,0 +1,20 @@
+{
+    "name": "ObfuzKlassExporter",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2373f786d14518f44b0f475db77ba4de",
+        "GUID:8d8df5820e695dc42a66c8535b4bb3c1",
+        "GUID:edab6ade04dd77447ab7a69c0675773c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
