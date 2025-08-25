@@ -2,9 +2,9 @@
 
 [![license](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/xinjay/ObfuzKlassExporter/blob/master/LICENSE)
 
-[CSDN](https://blog.csdn.net/xinjay1992/article/details/150548652) | [Github](https://github.com/xinjay/ObfuzKlassExporter) | [Gitee](https://gitee.com/xinjay/ObfuzKlassExporter)
+[CSDN](https://blog.csdn.net/xinjay1992/article/details/150762977) | [Github](https://github.com/xinjay/ObfuzKlassExporter) | [Gitee](https://gitee.com/xinjay/ObfuzKlassExporter)
 
-ObfuzKlassExporter是面向[Obfuz](https://github.com/focus-creative-games/obfuz)的一项辅助工具，方便开发者快捷批量导出指定类型，用于ObfuscationTypeMapper.RegisterType()类型注册。
+ObfuzKlassExporter是面向[Obfuz](https://github.com/focus-creative-games/obfuz)的一项辅助工具，方便开发者快捷批量导出指定类型，用于ObfuscationTypeMapper.RegisterType()类型注册，方便用指定类型名获取被加固混淆后的类。
 
 ## 特性
 
@@ -108,4 +108,54 @@ ObfuzResolver的Unity Package Manager URL安装地址：
 
 ### 添加自定义类型映射
 
-有些时候我们需要建立类型和类型名之间的映射关系，而类型名不一定需要和类型的原本名字一样，此时自定义类型映射就尤为关键，添加自定义类型映射的方式有两种：
+有些时候我们需要建立类型和类型名之间的映射关系，而类型名不一定需要和类型的原本名字完全一样，此时自定义类型映射就尤为关键，添加自定义类型映射的方式有两种：
+
+- 向**ExportConfig**脚本的**customExportMap**中添加自定义类型映射，如下：
+  
+  ```csharp
+  public partial class ObfuzKlassExporter
+  {
+      /// <summary>
+      /// 自定义类型映射
+      /// </summary>
+      public static Dictionary<Type, string> customExportMap = new()
+      {
+          { typeof(GenericKlass<float, string>), "Hello GenericKlass" }
+          //在这里添加自定义的类型映射
+  
+      };
+  }   
+  ```
+
+- 给需要导出的类型添加`[ObfuzExportAttribute]`特性，并指定**ExportName**参数，如下：
+
+- ```csharp
+  [ObfuzExport(ExprtName = "XXXXXDelegateSample")]
+  public delegate void MyDelegateSample(int a);
+  ```
+
+### 指定AOT和HotUpdate脚本导出路径
+
+指定按AOT和热更分类后导出的注册脚本文件路径，并调用`ObfuzKlassExporter.ExportObfuzKlasses(string aotpath, string hotupdatepath)`即可完成注册脚本的导出，如下；
+
+```csharp
+    [MenuItem("Obfuz/ExportKlasses")]
+    public static void ExportKlasses()
+    {
+        var output_aot = "Assets/ObfuzKlassExporter/AOT";
+        var output_hotupdate = "Assets/ObfuzKlassExporter/HotUpdate";
+        ObfuzKlassExporter.ExportObfuzKlasses(output_aot, output_hotupdate);
+    }
+```
+
+### 完成类型注册
+
+在运行时代码中适当位置调用注册脚本中的指定方法，完成类型注册：
+
+- 在AOT代码中适当位置调用`ObfuzKlassRegisterAutoGen_AOT.Register()`完成AOT导出类型注册；
+
+- 在HotUpdate代码中适当位置调用`ObfuzKlassRegisterAutoGen_Hotupdate.Register()`完成HotUpdate导出类型注册；
+
+至此即完成了所有指定类型的导出与注册，便能在代码中自由通过特定名称获取指定类型，尤其是类型反射过程中，或者是在XLua LuaWrap注册过程中，大量需要类似的操作。
+
+特殊说明：由于`ObfuzExportAttribute`添加了`[Conditional("UNITY_EDITOR")]`特性，因此在正常编译非"UNITY_EDITOR"程序集时会将该特性从被应用的类型上剥离下来，因而不必担心编译后的程序集会带入该特性。特别需要注意的是`[Conditional("XXX")]`只适用于方法，或者继承自`Attribute`的类型，如`ObfuzExportAttribute`。
